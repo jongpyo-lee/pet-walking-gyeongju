@@ -6,7 +6,7 @@
 }
 
 body {
-  background-color: #f5f7fa;
+  background-color: #f4f6f9;
   color: #333;
   padding-bottom: 40px;
 }
@@ -15,7 +15,7 @@ header {
   background-color: #4CAF50;
   color: white;
   text-align: center;
-  padding: 1rem;
+  padding: 1.2rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -27,10 +27,10 @@ main {
 
 #map-container {
   width: 100%;
-  height: 350px;
+  height: 380px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   margin-bottom: 15px;
 }
 
@@ -43,30 +43,14 @@ main {
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   margin-bottom: 20px;
 }
 
-.current-loc-card {
-  padding: 12px 20px;
-}
-
 .card h2 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   margin-bottom: 15px;
   color: #2e7d32;
-}
-
-#btn-current-location {
-  width: 100%;
-  padding: 10px;
-  background-color: #2196F3;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 0.95rem;
-  cursor: pointer;
 }
 
 .form-group {
@@ -75,17 +59,8 @@ main {
 
 .form-group label {
   display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
   font-size: 0.9rem;
-}
-
-.form-group input, .form-group textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
+  margin-bottom: 6px;
 }
 
 .search-input-group {
@@ -95,10 +70,14 @@ main {
 
 .search-input-group input {
   flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
 }
 
 .search-input-group button {
-  padding: 0 15px;
+  padding: 0 16px;
   background-color: #4CAF50;
   color: white;
   border: none;
@@ -110,25 +89,25 @@ main {
 .sub-text {
   font-size: 0.8rem;
   color: #2e7d32;
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .button-group {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-top: 5px;
 }
 
 .button-group button {
   flex: 1;
-  min-width: 70px;
-  padding: 8px;
+  min-width: 65px;
+  padding: 9px 4px;
   border: 1px solid #4CAF50;
   background-color: #f1f8e9;
   color: #2e7d32;
   border-radius: 8px;
   font-weight: bold;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -159,7 +138,7 @@ main {
 
 .btn-secondary {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   background-color: #FF9800;
   color: white;
   border: none;
@@ -179,6 +158,16 @@ main {
   font-size: 0.85rem;
 }
 
+.sub-group {
+  margin-top: 8px;
+}
+
+.sub-group button {
+  border-color: #FF9800;
+  background-color: #fff;
+  color: #e65100;
+}
+
 .result-box {
   margin-top: 15px;
   padding: 15px;
@@ -188,7 +177,7 @@ main {
 }
 
 .result-box h3 {
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: #2e7d32;
   margin-bottom: 6px;
 }
@@ -197,53 +186,5 @@ main {
   font-size: 0.9rem;
   color: #444;
   line-height: 1.4;
-}
-
-.info-text {
-  font-size: 0.85rem;
-  color: #666;
-  margin-top: 6px;
-  text-align: center;
-}
-
-.btn-submit {
-  width: 100%;
-  padding: 12px;
-  background-color: #388E3C;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.log-list {
-  list-style: none;
-}
-
-.log-item {
-  border-bottom: 1px solid #eee;
-  padding: 12px 0;
-}
-
-.log-item:last-child {
-  border-bottom: none;
-}
-
-.log-title {
-  font-weight: bold;
-  color: #333;
-}
-
-.log-details {
-  font-size: 0.85rem;
-  color: #888;
-  margin-top: 4px;
-}
-
-.log-memo {
-  font-size: 0.9rem;
-  color: #555;
-  margin-top: 6px;
+  white-space: pre-line;
 }
