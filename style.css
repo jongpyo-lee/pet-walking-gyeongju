@@ -1,200 +1,230 @@
-// 1. 지도 초기화 (경주시청 기준)
-const map = L.map('map').setView([35.8562, 129.2247], 13);
-
-// 지도 타일 설정
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap'
-}).addTo(map);
-
-// 커스텀 아이콘 설정 (카페 마커)
-const cafeIcon = L.icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/2734/2734035.png',
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
-  popupAnchor: [0, -30]
-});
-
-// 2. 경주 반려견 동반 카페 데이터 및 마커 추가
-const dogCafes = [
-  { name: "황남동 카페 A (황리단길)", lat: 35.8362, lng: 129.2120, desc: "☕ 야외 테라스 반려견 동반 가능" },
-  { name: "보문 호수뷰 카페 B", lat: 35.8390, lng: 129.2850, desc: "☕ 넓은 잔디 마당 보유" },
-  { name: "불국사 인근 카페 C", lat: 35.7890, lng: 129.3280, desc: "☕ 소형견 실내 동반 가능" },
-  { name: "동천동 루프탑 카페 D", lat: 35.8650, lng: 129.2310, desc: "☕ 반려견 전용 음료 제공" }
-];
-
-dogCafes.forEach(cafe => {
-  L.marker([cafe.lat, cafe.lng], { icon: cafeIcon }).addTo(map)
-    .bindPopup(`<b>🐶 ${cafe.name}</b><br>${cafe.desc}`);
-});
-
-// 3. 경주 추천 산책 코스
-const routes = {
-  '황성공원': { lat: 35.8617, lng: 129.2158, info: '🌲 황성공원: 울창한 소나무 숲길 산책로' },
-  '보문호수': { lat: 35.8373, lng: 129.2818, info: '🌊 보문호수: 호숫가를 따라 조용히 걷는 코스' },
-  '동궁과월지': { lat: 35.8341, lng: 129.2266, info: '🌸 동궁과월지/첨성대: 넓은 잔디와 유적지 코스' }
-};
-
-let currentMarker = null;
-function showRoute(routeName) {
-  const route = routes[routeName];
-  if (!route) return;
-
-  if (currentMarker) map.removeLayer(currentMarker);
-
-  map.setView([route.lat, route.lng], 15);
-  currentMarker = L.marker([route.lat, route.lng]).addTo(map)
-    .bindPopup(`<b>${routeName}</b>`)
-    .openPopup();
-
-  document.getElementById('route-info').innerText = route.info;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 
-// 4. 목표 설정 기능
-let selectedTarget = "";
-function setTarget(type, value) {
-  if (type === 'time') {
-    selectedTarget = `목표 시간: ${value}`;
-  } else {
-    selectedTarget = `목표 거리: ${value}`;
-  }
-  document.getElementById('target-display').innerText = `선택된 목표: ${value}`;
+body {
+  background-color: #f5f7fa;
+  color: #333;
+  padding-bottom: 40px;
 }
 
-// 5. GPS 트래킹 기능
-let tracking = false;
-let watchId = null;
-let userPath = [];
-let polyline = null;
-let userMarker = null;
-
-function toggleTracking() {
-  const btnStart = document.getElementById('btn-gps-start');
-  const btnReset = document.getElementById('btn-gps-reset');
-  const gpsStatus = document.getElementById('gps-status');
-
-  if (!navigator.geolocation) {
-    alert("이 브라우저에서는 GPS 위치 서비스를 지원하지 않습니다.");
-    return;
-  }
-
-  if (!tracking) {
-    // 트래킹 시작
-    tracking = true;
-    btnStart.innerText = "⏸️ 산책 정지";
-    btnStart.style.backgroundColor = "#f44336";
-    btnReset.style.display = "inline-block";
-    gpsStatus.innerText = "📍 위치 추적 중... 이동 경로가 지도에 파란 선으로 그려집니다.";
-
-    watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        const newPos = [lat, lng];
-
-        userPath.push(newPos);
-
-        if (!userMarker) {
-          userMarker = L.marker(newPos).addTo(map).bindPopup("현재 내 위치").openPopup();
-        } else {
-          userMarker.setLatLng(newPos);
-        }
-
-        if (polyline) {
-          polyline.setLatLngs(userPath);
-        } else {
-          polyline = L.polyline(userPath, { color: '#2196F3', weight: 5 }).addTo(map);
-        }
-
-        map.setView(newPos, 16);
-      },
-      (error) => {
-        alert("위치 정보를 가져올 수 없습니다. GPS 설정 및 권한을 확인해주세요.");
-      },
-      { enableHighAccuracy: true }
-    );
-  } else {
-    // 트래킹 정지
-    tracking = false;
-    navigator.geolocation.clearWatch(watchId);
-    btnStart.innerText = "▶️ 산책 다시 시작";
-    btnStart.style.backgroundColor = "#4CAF50";
-    gpsStatus.innerText = "⏸️ 트래킹이 일시 정지되었습니다.";
-  }
+header {
+  background-color: #4CAF50;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-function resetTracking() {
-  tracking = false;
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  if (polyline) map.removeLayer(polyline);
-  if (userMarker) map.removeLayer(userMarker);
-
-  userPath = [];
-  polyline = null;
-  userMarker = null;
-
-  document.getElementById('btn-gps-start').innerText = "▶️ 산책 시작 (GPS 추적)";
-  document.getElementById('btn-gps-start').style.backgroundColor = "#4CAF50";
-  document.getElementById('btn-gps-reset').style.display = "none";
-  document.getElementById('gps-status').innerText = "이동 경로가 초기화되었습니다.";
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 15px;
 }
 
-// 6. 기록 저장 및 불러오기
-const walkForm = document.getElementById('walk-form');
-const logList = document.getElementById('log-list');
-
-document.addEventListener('DOMContentLoaded', loadLogs);
-
-walkForm.addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const dogName = document.getElementById('dog-name').value;
-  const walkTime = document.getElementById('walk-time').value;
-  const walkDistance = document.getElementById('walk-distance').value;
-  const walkMemo = document.getElementById('walk-memo').value;
-  const dateStr = new Date().toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  const newLog = {
-    dogName,
-    walkTime,
-    walkDistance,
-    target: selectedTarget,
-    walkMemo,
-    date: dateStr
-  };
-
-  saveLog(newLog);
-  appendLogToUI(newLog);
-
-  walkForm.reset();
-  alert("산책 기록이 저장되었습니다!");
-});
-
-function saveLog(log) {
-  const logs = JSON.parse(localStorage.getItem('walkLogs') || '[]');
-  logs.unshift(log);
-  localStorage.setItem('walkLogs', JSON.stringify(logs));
+#map-container {
+  width: 100%;
+  height: 330px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  margin-bottom: 15px;
 }
 
-function loadLogs() {
-  const logs = JSON.parse(localStorage.getItem('walkLogs') || '[]');
-  logs.forEach(log => appendLogToUI(log));
+#map {
+  width: 100%;
+  height: 100%;
 }
 
-function appendLogToUI(log) {
-  const li = document.createElement('li');
-  li.className = 'log-item';
-  
-  let distInfo = log.walkDistance ? ` | ${log.walkDistance}km` : '';
-  let targetInfo = log.target ? ` (${log.target})` : '';
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
 
-  li.innerHTML = `
-    <div class="log-title">🐕 ${log.dogName} - ${log.walkTime}분${distInfo}${targetInfo}</div>
-    <div class="log-details">${log.date}</div>
-    ${log.walkMemo ? `<div class="log-memo">"${log.walkMemo}"</div>` : ''}
-  `;
-  logList.prepend(li);
+.current-loc-card {
+  padding: 12px 20px;
+}
+
+.card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #2e7d32;
+}
+
+#btn-current-location {
+  width: 100%;
+  padding: 10px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#btn-current-location:hover {
+  background-color: #1976D2;
+}
+
+.select-box {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  margin-top: 5px;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+.button-group button {
+  flex: 1;
+  min-width: 70px;
+  padding: 8px;
+  border: 1px solid #4CAF50;
+  background-color: #f1f8e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button-group button.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.target-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 12px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.btn-recommend {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.btn-recommend:hover {
+  background-color: #45a049;
+}
+
+.result-box {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f0f7f4;
+  border-left: 4px solid #4CAF50;
+  border-radius: 6px;
+}
+
+.result-box h3 {
+  font-size: 1.05rem;
+  color: #2e7d32;
+  margin-bottom: 6px;
+}
+
+.result-box p {
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+.info-text {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background-color: #388E3C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-submit:hover {
+  background-color: #2E7D32;
+}
+
+.log-list {
+  list-style: none;
+}
+
+.log-item {
+  border-bottom: 1px solid #eee;
+  padding: 12px 0;
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-title {
+  font-weight: bold;
+  color: #333;
+}
+
+.log-details {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 4px;
+}
+
+.log-memo {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 6px;
 }
