@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>경주 반려견 산책 지도</title>
+  
+  <!-- Leaflet 지도 라이브러리 CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🐾 경주 반려견 산책 앱</h1>
+  </header>
+
+  <main>
+    <!-- 지도 영역 -->
+    <section id="map-container">
+      <div id="map"></div>
+    </section>
+
+    <!-- 추천 코스 선택 -->
+    <section class="card">
+      <h2>📍 경주 추천 산책 코스</h2>
+      <div class="button-group">
+        <button onclick="showRoute('황성공원')">🌳 황성공원 산책로</button>
+        <button onclick="showRoute('보문호수')">🌊 보문호수 산책길</button>
+        <button onclick="showRoute('동궁과월지')">🌸 동궁과 월지/첨성대</button>
+      </div>
+      <p id="route-info" class="info-text">버튼을 눌러 추천 코스를 확인해보세요.</p>
+    </section>
+
+    <!-- 산책 기록 -->
+    <section class="card">
+      <h2>📝 오늘의 산책 기록하기</h2>
+      <form id="walk-form">
+        <div class="form-group">
+          <label for="dog-name">반려견 이름</label>
+          <input type="text" id="dog-name" placeholder="예: 초코" required>
+        </div>
+        <div class="form-group">
+          <label for="walk-time">산책 시간 (분)</label>
+          <input type="number" id="walk-time" placeholder="예: 30" required>
+        </div>
+        <div class="form-group">
+          <label for="walk-memo">산책 일지/메모</label>
+          <textarea id="walk-memo" rows="3" placeholder="오늘 산책은 어땠나요?"></textarea>
+        </div>
+        <button type="submit" class="btn-submit">기록 저장하기</button>
+      </form>
+    </section>
+
+    <!-- 저장된 기록 목록 -->
+    <section class="card">
+      <h2>📋 저장된 산책 기록</h2>
+      <ul id="log-list" class="log-list">
+        <!-- 기록이 여기에 동적으로 추가됩니다 -->
+      </ul>
+    </section>
+  </main>
+
+  <!-- Leaflet 지도 라이브러리 JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
