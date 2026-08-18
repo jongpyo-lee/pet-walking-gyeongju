@@ -15,23 +15,39 @@ let startMarker = L.marker(startCoords).addTo(map).bindPopup("<b>🚩 출발지<
 let endMarker = null;
 let currentPolyline = null;
 
-// 1. 도로명/지번 주소 검색 (Nominatim OpenSource API)
+// 1. 도로명/지번 주소 검색 (User-Agent 헤더 및 예외 처리 강화 적용)
 function searchAddress() {
-  const query = document.getElementById('address-input').value;
+  const inputEl = document.getElementById('address-input');
   const infoEl = document.getElementById('address-result-info');
+  let query = inputEl.value.trim();
 
-  if (!query.trim()) {
-    alert("주소를 입력해주세요.");
+  if (!query) {
+    alert("검색할 주소를 입력해주세요.");
     return;
   }
 
   infoEl.innerText = "🔍 주소를 검색 중입니다...";
 
-  const searchQuery = query.includes("경주") ? query : `경주시 ${query}`;
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`;
+  // 한국 주소 인식률 개선을 위한 키워드 보정
+  if (!query.includes("경주")) query = `경주시 ${query}`;
+  if (!query.includes("대한민국")) query = `대한민국 ${query}`;
 
-  fetch(url)
-    .then(res => res.json())
+  // Nominatim API URL (HTTPS 및 JSON 포맷 명시)
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=1`;
+
+  // User-Agent 헤더를 포함하여 요청 (API 정책 준수 및 403 에러 방지)
+  fetch(url, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'DogWalkingApp/1.0 (contact@example.com)'
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`서버 응답 에러: ${response.status}`);
+      }
+      return response.json();
+    })
     .then(data => {
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
@@ -40,18 +56,19 @@ function searchAddress() {
 
         if (startMarker) map.removeLayer(startMarker);
 
-        map.setView(startCoords, 15);
+        map.setView(startCoords, 16);
         startMarker = L.marker(startCoords).addTo(map)
           .bindPopup(`<b>🚩 출발지</b><br>${data[0].display_name.split(',')[0]}`)
           .openPopup();
 
-        infoEl.innerText = `✅ 검색 위치 설정 완료: ${data[0].display_name.split(',')[0]}`;
+        infoEl.innerText = `✅ 검색 완료: ${data[0].display_name.split(',')[0]}`;
       } else {
-        infoEl.innerText = "❌ 검색 결과가 없습니다. 도로명이나 지번을 다시 확인해주세요.";
+        infoEl.innerText = "❌ 위치를 찾지 못했습니다. '황남동' 또는 '포석로 1080'처럼 더 단순한 도로명/동 이름으로 검색해 보세요.";
       }
     })
-    .catch(() => {
-      infoEl.innerText = "❌ 검색 중 오류가 발생했습니다.";
+    .catch(error => {
+      console.error("주소 검색 오류:", error);
+      infoEl.innerText = `❌ 에러 발생 (${error.message}). 잠시 후 다시 시도해 주세요.`;
     });
 }
 
@@ -63,7 +80,7 @@ function selectType(type) {
   event.target.classList.add('active');
 }
 
-// 5. 산책 목표 선택 (30분 / 1시간 / 3km / 5km / 10km)
+// 3. 산책 목표 선택 (30분 / 1시간 / 3km / 5km / 10km)
 function selectTarget(target) {
   selectedTarget = target;
   const btns = document.querySelectorAll('.target-group button');
@@ -71,7 +88,7 @@ function selectTarget(target) {
   event.target.classList.add('active');
 }
 
-// 3. 도로망 기준 추천 코스 생성 (OSRM Foot Routing API 활용)
+// 4. 도로망 기준 추천 코스 생성 (OSRM Foot Routing API 활용)
 function recommendCourse() {
   if (customMode) cancelCustomCourse();
 
@@ -134,7 +151,7 @@ function recommendCourse() {
     });
 }
 
-// 4. 지도 클릭으로 나만의 코스 직접 만들기
+// 5. 지도 클릭으로 나만의 코스 직접 만들기
 let customMode = false;
 let customPoints = [];
 let customMarkers = [];
