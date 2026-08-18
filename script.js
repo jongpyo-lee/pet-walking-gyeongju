@@ -27,11 +27,11 @@ main {
 
 #map-container {
   width: 100%;
-  height: 320px;
+  height: 330px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 #map {
@@ -47,27 +47,54 @@ main {
   margin-bottom: 20px;
 }
 
+.current-loc-card {
+  padding: 12px 20px;
+}
+
 .card h2 {
   font-size: 1.2rem;
   margin-bottom: 15px;
   color: #2e7d32;
 }
 
+#btn-current-location {
+  width: 100%;
+  padding: 10px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#btn-current-location:hover {
+  background-color: #1976D2;
+}
+
+.select-box {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  margin-top: 5px;
+}
+
 .button-group {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.sub-group {
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 .button-group button {
   flex: 1;
-  min-width: 90px;
-  padding: 10px;
+  min-width: 70px;
+  padding: 8px;
   border: 1px solid #4CAF50;
   background-color: #f1f8e9;
   color: #2e7d32;
@@ -77,19 +104,15 @@ main {
   transition: all 0.2s;
 }
 
-.button-group button:hover {
+.button-group button.active {
   background-color: #4CAF50;
   color: white;
 }
 
-.target-selection {
-  margin-bottom: 15px;
-}
-
 .target-badge {
   display: inline-block;
-  margin-top: 5px;
-  padding: 6px 12px;
+  margin-top: 8px;
+  padding: 5px 12px;
   background-color: #e8f5e9;
   color: #2e7d32;
   border-radius: 20px;
@@ -97,22 +120,52 @@ main {
   font-weight: bold;
 }
 
-.divider {
+.btn-recommend {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
   border: none;
-  border-top: 1px dashed #ddd;
-  margin: 15px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
 }
 
-.info-text {
-  font-size: 0.9rem;
-  color: #666;
-  background: #f9f9f9;
-  padding: 10px;
+.btn-recommend:hover {
+  background-color: #45a049;
+}
+
+.result-box {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f0f7f4;
+  border-left: 4px solid #4CAF50;
   border-radius: 6px;
 }
 
+.result-box h3 {
+  font-size: 1.05rem;
+  color: #2e7d32;
+  margin-bottom: 6px;
+}
+
+.result-box p {
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+.info-text {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 6px;
+  text-align: center;
+}
+
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 }
 
 .form-group label {
@@ -133,7 +186,7 @@ main {
 .btn-submit {
   width: 100%;
   padding: 12px;
-  background-color: #4CAF50;
+  background-color: #388E3C;
   color: white;
   border: none;
   border-radius: 8px;
@@ -143,7 +196,7 @@ main {
 }
 
 .btn-submit:hover {
-  background-color: #45a049;
+  background-color: #2E7D32;
 }
 
 .log-list {
