@@ -6,17 +6,17 @@
     <title>경주 멍멍 산책 - 반려견 산책 코스 추천</title>
     <!-- CSS 파일 연결 -->
     <link rel="stylesheet" href="style.css">
-    <!-- 카카오맵 API 스크립트 (YOUR_APP_KEY 부분을 본인의 앱 키로 변경하세요) -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_APP_KEY"></script>
+    <!-- Leaflet 지도 CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
     <header>🐾 경주 멍멍 산책 코스 추천</header>
 
     <div class="container">
-        <!-- 0. 지도 영역 -->
+        <!-- 0. 지도 영역 (이제 API 키 없이도 즉시 화면에 나타납니다) -->
         <div class="card">
-            <h2>🗺️ 경주 산책 지도</h2>
+            <h2>🗺️ 실시간 산책 지도</h2>
             <div id="map"></div>
         </div>
 
@@ -32,13 +32,13 @@
 
             <label for="goalSelect">목표 설정</label>
             <select id="goalSelect">
-                <option value="30분">30분 산책</option>
-                <option value="1시간">1시간 산책</option>
+                <option value="30분">30분 산책 (약 2km)</option>
+                <option value="1시간">1시간 산책 (약 4km)</option>
                 <option value="3km">3km 거리</option>
                 <option value="5km">5km 거리</option>
                 <option value="10km">10km 거리</option>
             </select>
-            <button class="btn" onclick="recommendCourses()">맞춤 코스 추천받기</button>
+            <button class="btn" onclick="recommendCourses()">맞춤 코스 추천 및 지도 표시</button>
         </div>
 
         <!-- 2. 추천 코스 리스트 -->
@@ -79,6 +79,8 @@
         </div>
     </div>
 
+    <!-- Leaflet 지도 JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- JavaScript 파일 연결 -->
     <script src="script.js"></script>
 </body>
