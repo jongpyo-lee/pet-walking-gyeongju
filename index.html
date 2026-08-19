@@ -14,7 +14,7 @@
     <header>🐾 경주 멍멍 산책 코스 추천</header>
 
     <div class="container">
-        <!-- 0. 지도 영역 (이제 API 키 없이도 즉시 화면에 나타납니다) -->
+        <!-- 지도 영역 -->
         <div class="card">
             <h2>🗺️ 실시간 산책 지도</h2>
             <div id="map"></div>
@@ -25,7 +25,7 @@
             <h2>📍 산책 설정</h2>
             <label for="locationInput">현위치 또는 주소 검색 (경주시)</label>
             <div class="search-box">
-                <input type="text" id="locationInput" placeholder="예: 황성공원, 보문로 424">
+                <input type="text" id="locationInput" placeholder="예: 황성공원, 보문로 424, 첨성로">
                 <button class="btn" onclick="searchLocation()">검색</button>
             </div>
             <button class="btn gps-btn" onclick="getCurrentLocation()">현재 내 위치 가져오기</button>
