@@ -36,7 +36,7 @@ function getCurrentLocation() {
     }
 }
 
-// --- 3. 실제 주소 검색 API (OpenStreetMap Nominatim 연동으로 정확한 위치 매칭) ---
+// --- 3. 실제 주소 검색 API (Nominatim) ---
 function searchLocation() {
     const query = document.getElementById('locationInput').value.trim();
     if(!query) {
@@ -44,7 +44,6 @@ function searchLocation() {
         return;
     }
 
-    // 정확도를 높이기 위해 검색어에 '경주'를 조합하여 검색
     const searchQuery = query.includes("경주") ? query : `${query} 경주`;
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`;
 
@@ -66,11 +65,11 @@ function searchLocation() {
             }
         })
         .catch(error => {
-            alert("주소 검색 중 오류가 발생했습니다. 인터넷 연결을 확인해주세요.");
+            alert("주소 검색 중 오류가 발생했습니다.");
         });
 }
 
-// --- 4. 목표 설정에 맞춘 자연스러운 원형/곡선 산책 코스 생성 ---
+// --- 4. 실제 인도/도로망을 따라가는 길찾기 코스 생성 (OSRM API 연동) ---
 function recommendCourses() {
     const goal = document.getElementById('goalSelect').value;
     const listDiv = document.getElementById('courseList');
@@ -79,47 +78,67 @@ function recommendCourses() {
         map.removeLayer(currentRouteLine);
     }
 
-    // 목표 거리에 따른 반경 설정 (단조로운 박스가 아닌 부드러운 곡선 루프 생성)
-    let radius = 0.006; // 약 3km / 30분
-    if (goal === "1시간" || goal === "5km") radius = 0.012;
-    if (goal === "10km") radius = 0.024;
+    // 목표치에 따라 반환점 거리 설정 (실제 보행자 거리 기준, 위경도 오프셋 계산)
+    // 30분/3km -> 약 1km 갔다가 돌아오는 코스
+    // 1시간/5km -> 약 1.8km 갔다가 돌아오는 코스
+    // 10km -> 약 3.5km 갔다가 돌아오는 코스
+    let offset = 0.008; 
+    if (goal === "1시간" || goal === "5km") offset = 0.015;
+    if (goal === "10km") offset = 0.030;
 
-    // 12개의 다중 포인트로 원형/유기적인 곡선 코스 구성 (박스 형태 방지)
-    const routePoints = [];
-    const totalPoints = 12;
-    for (let i = 0; i <= totalPoints; i++) {
-        let angle = (i / totalPoints) * 2 * Math.PI;
-        // 약간의 굴곡을 주어 실제 도로/산책로 느낌 구현
-        let waveFactor = radius * (1 + 0.15 * Math.sin(i * 2));
-        let lat = currentLat + waveFactor * Math.cos(angle);
-        let lng = currentLng + waveFactor * Math.sin(angle) / Math.cos(currentLat * Math.PI / 180);
-        routePoints.push([lat, lng]);
-    }
+    // 목적지(반환점) 좌표 계산 (출발지 기준 북동쪽 방향의 실제 도로 위치)
+    let destLat = currentLat + offset;
+    let destLng = currentLng + offset;
 
-    // 지도에 부드러운 곡선 경로 선 표시
-    currentRouteLine = L.polyline(routePoints, {color: '#ff6b6b', weight: 6, opacity: 0.85, dashArray: '5, 10'}).addTo(map);
-    map.fitBounds(currentRouteLine.getBounds());
+    // OSRM 보행자(foot) 전용 경로 검색 API 호출 (실제 인도 및 도로망을 정확히 따라감)
+    // 구조: 출발지(lng,lat) -> 반환점(lng,lat) -> 출발지(lng,lat) 왕복 코스
+    const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${currentLng},${currentLat};${destLng},${destLat};${currentLng},${currentLat}?overview=full&geometries=geojson`;
 
-    let html = `
-        <div class="course-item">
-            <strong>🐾 [맞춤 순환 산책로] (${goal})</strong><br>
-            <span style="font-size: 0.85rem; color: #555;">선택하신 위치를 중심으로 목표(${goal})에 걸맞은 자연스러운 순환 산책 코스가 지도에 붉은색 점선 곡선으로 표시되었습니다!</span>
-        </div>
-    `;
+    fetch(osrmUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                const route = data.routes[0];
+                // GeoJSON 좌표 형식은 [lng, lat]이므로 Leaflet에 맞게 [lat, lng]로 변환
+                const latLngs = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
 
-    myCustomCourses.forEach(c => {
-        if (c.goal === goal || goal.includes("전체")) {
-            html += `
-                <div class="course-item">
-                    <strong>🌟 ${c.title}</strong><br>
-                    <span style="font-size: 0.85rem; color: #555;">목표: ${c.goal} | ${c.desc}</span>
-                </div>
-            `;
-        }
-    });
+                // 실제 도로/인도 위에 파란색 실선 경로 표시
+                currentRouteLine = L.polyline(latLngs, { color: '#228be6', weight: 6, opacity: 0.85 }).addTo(map);
+                map.fitBounds(currentRouteLine.getBounds());
 
-    listDiv.innerHTML = html;
-    alert(`설정하신 [${goal}] 목표에 맞춘 최적의 산책 코스가 생성되었습니다.`);
+                const distanceKm = (route.distance / 1000).toFixed(2);
+                const durationMin = Math.round(route.duration / 60);
+
+                let html = `
+                    <div class="course-item">
+                        <strong>🐾 [실제 도로/인도 맞춤 산책로] (${goal})</strong><br>
+                        <span style="font-size: 0.85rem; color: #555;">
+                            실제 보행자 길잡이 기준 총 거리: <b>약 ${distanceKm}km</b> | 예상 소요시간: <b>약 ${durationMin}분</b><br>
+                            지도 위에 실제 인도와 도로망을 따라 걷는 경로가 파란색 실선으로 표시되었습니다!
+                        </span>
+                    </div>
+                `;
+
+                myCustomCourses.forEach(c => {
+                    if (c.goal === goal || goal.includes("전체")) {
+                        html += `
+                            <div class="course-item">
+                                <strong>🌟 ${c.title}</strong><br>
+                                <span style="font-size: 0.85rem; color: #555;">목표: ${c.goal} | ${c.desc}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                listDiv.innerHTML = html;
+                alert(`선택하신 목표(${goal})에 맞는 실제 인도/도로 산책 경로가 지도에 반영되었습니다!`);
+            } else {
+                alert("경로를 탐색할 수 없습니다. 다른 위치를 선택해 주세요.");
+            }
+        })
+        .catch(error => {
+            alert("길찾기 서버와 통신 중 오류가 발생했습니다.");
+        });
 }
 
 // --- 5. 나만의 코스 등록 ---
