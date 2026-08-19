@@ -36,12 +36,13 @@ header {
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* 지도 영역 스타일 */
+/* 지도 영역 필수 높이 설정 */
 #map {
     width: 100%;
-    height: 250px;
+    height: 300px;
     border-radius: 8px;
     border: 2px solid var(--primary-color);
+    z-index: 1;
 }
 
 h2 {
