@@ -1,87 +1,77 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>반려견 맞춤 산책 앱</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경주 멍멍 산책 - 반려견 산책 코스 추천</title>
+    <!-- CSS 파일 연결 -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header>
-    <h1>🐾 반려견 맞춤 산책 앱</h1>
-  </header>
+    <header>🐾 경주 멍멍 산책 코스 추천</header>
 
-  <main>
-    <!-- 지도 영역 -->
-    <section id="map-container">
-      <div id="map"></div>
-    </section>
+    <div class="container">
+        <!-- 1. 위치 및 목표 설정 -->
+        <div class="card">
+            <h2>📍 산책 설정</h2>
+            <label for="locationInput">현위치 또는 주소 검색 (경주시)</label>
+            <div class="search-box">
+                <input type="text" id="locationInput" placeholder="예: 황성공원, 보문로 424">
+                <button class="btn" onclick="searchLocation()">검색</button>
+            </div>
+            <button class="btn gps-btn" onclick="getCurrentLocation()">현재 내 위치 가져오기</button>
 
-    <!-- 메인 설정 및 코스 관리 카드 -->
-    <section class="card">
-      <h2>🎯 산책 코스 설정</h2>
-      
-      <!-- 1. 도로명 / 지번 주소 검색 -->
-      <div class="form-group">
-        <label for="address-input"><b>1. 출발지 주소 검색 (도로명 / 지번)</b></label>
-        <div class="search-input-group">
-          <input type="text" id="address-input" placeholder="예: 황남동 172 또는 포석로 1080" value="경주시 황남동">
-          <button type="button" onclick="searchAddress()">검색</button>
+            <label for="goalSelect">목표 설정</label>
+            <select id="goalSelect">
+                <option value="30분">30분 산책</option>
+                <option value="1시간">1시간 산책</option>
+                <option value="3km">3km 거리</option>
+                <option value="5km">5km 거리</option>
+                <option value="10km">10km 거리</option>
+            </select>
+            <button class="btn" onclick="recommendCourses()">맞춤 코스 추천받기</button>
         </div>
-        <p id="address-result-info" class="sub-text"></p>
-      </div>
 
-      <!-- 2. 코스 형태 선택 (편도 / 왕복) -->
-      <div class="form-group">
-        <label><b>2. 코스 형태 선택</b></label>
-        <div class="button-group type-group">
-          <button type="button" class="btn-type active" onclick="selectType('왕복')">🔄 왕복 (원점 회귀)</button>
-          <button type="button" class="btn-type" onclick="selectType('편도')">➡️ 편도 (목적지 도착)</button>
+        <!-- 2. 추천 코스 리스트 -->
+        <div class="card">
+            <h2>✨ 추천 산책 코스</h2>
+            <div id="courseList">
+                <p class="placeholder-text">위치와 목표를 설정하고 추천을 받아보세요!</p>
+            </div>
         </div>
-      </div>
 
-      <!-- 5. 산책 목표 선택 (30분 / 1시간 / 3km / 5km / 10km) -->
-      <div class="form-group">
-        <label><b>3. 산책 목표 선택</b></label>
-        <div class="button-group target-group">
-          <button type="button" class="btn-target active" onclick="selectTarget('30분')">⏱️ 30분</button>
-          <button type="button" class="btn-target" onclick="selectTarget('1시간')">⏱️ 1시간</button>
-          <button type="button" class="btn-target" onclick="selectTarget('3km')">📏 3km</button>
-          <button type="button" class="btn-target" onclick="selectTarget('5km')">📏 5km</button>
-          <button type="button" class="btn-target" onclick="selectTarget('10km')">📏 10km</button>
+        <!-- 3. 나만의 코스 만들기 -->
+        <div class="card">
+            <h2>🛠️ 나만의 산책 코스 만들기</h2>
+            <label for="customTitle">코스 이름</label>
+            <input type="text" id="customTitle" placeholder="예: 우리 동네 숨은 산책로">
+            
+            <label for="customDesc">코스 설명 및 경유지</label>
+            <input type="text" id="customDesc" placeholder="예: 출발지 -> 공원 한 바퀴 -> 카페 앞">
+
+            <button class="btn custom-btn" onclick="saveCustomCourse()">내 코스로 등록하기</button>
         </div>
-      </div>
 
-      <!-- 3 & 4. 추천 받기 / 직접 만들기 버튼 -->
-      <div class="action-btn-group">
-        <button type="button" onclick="recommendCourse()" class="btn-primary">🔍 도로망 기준 추천 코스 생성</button>
-        <button type="button" onclick="toggleCustomCourseMode()" id="btn-custom-mode" class="btn-secondary">✏️ 지도 클릭으로 직접 코스 만들기</button>
-      </div>
+        <!-- 4. 산책 후 기록/저장 -->
+        <div class="card">
+            <h2>📝 산책 일지 기록</h2>
+            <label for="recordDate">산책 날짜</label>
+            <input type="date" id="recordDate">
 
-      <!-- 직접 만들기 안내 및 컨트롤 바 -->
-      <div id="custom-course-banner" class="custom-banner" style="display:none;">
-        <p><b>[직접 만들기 모드 작동 중]</b><br>지도를 클릭하여 원하는 경유 지점들을 순서대로 찍어주세요.</p>
-        <div class="button-group sub-group">
-          <button type="button" onclick="undoLastCustomPoint()">↩️ 마지막 지점 취소</button>
-          <button type="button" onclick="finishCustomCourse()">✅ 나만의 코스 완성</button>
-          <button type="button" onclick="cancelCustomCourse()">❌ 취소</button>
+            <label for="recordMemo">반려견과의 산책 소감 및 메모</label>
+            <input type="text" id="recordMemo" placeholder="예: 날씨가 좋아서 댕이가 아주 좋아했어요!">
+
+            <button class="btn record-btn" onclick="saveWalkRecord()">기록 저장하기</button>
+
+            <h3 class="history-title">나의 산책 히스토리</h3>
+            <div id="recordList">
+                <p class="placeholder-text">저장된 산책 기록이 없습니다.</p>
+            </div>
         </div>
-      </div>
+    </div>
 
-      <!-- 결과 출력 영역 -->
-      <div id="recommend-result" class="result-box" style="display:none;">
-        <h3 id="result-title"></h3>
-        <p id="result-desc"></p>
-      </div>
-    </section>
-  </main>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="script.js"></script>
+    <!-- JavaScript 파일 연결 -->
+    <script src="script.js"></script>
 </body>
 </html>
