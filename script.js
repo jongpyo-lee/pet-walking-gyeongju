@@ -1,15 +1,37 @@
-// 초기 경주 지역 샘플 코스 데이터
+// --- 1. 카카오맵 지도 초기화 및 마커 표시 ---
+var container = document.getElementById('map');
+var options = {
+    center: new kakao.maps.LatLng(35.8427, 129.2084), // 경주시청 중심 좌표
+    level: 7
+};
+var map = new kakao.maps.Map(container, options);
+
+// 추천 코스 데이터 (위도, 경주 좌표 포함)
 const sampleCourses = [
-    { title: "황성공원 솔숲 산책로", goal: "30분", desc: "황성공원 운동장 주변 소나무 그늘 산책 코스 (약 2km)" },
-    { title: "보문호수 산책로 코스", goal: "1시간", desc: "보문 호수를 따라 걷는 탁 트인 수변 코스 (약 7km)" },
-    { title: "동궁과 월지 돌담길", goal: "3km", desc: "고즈넉한 경주 야경과 돌담을 구경하는 산책로" },
-    { title: "형산강 체육공원 강변길", goal: "5km", desc: "탁 트인 강바람을 맞으며 걷기 좋은 평지 코스" }
+    { title: "황성공원 솔숲 산책로", goal: "30분", desc: "황성공원 운동장 주변 소나무 그늘 산책 코스 (약 2km)", lat: 35.852, lng: 129.203 },
+    { title: "보문호수 산책로 코스", goal: "1시간", desc: "보문 호수를 따라 걷는 탁 트인 수변 코스 (약 7km)", lat: 35.848, lng: 129.255 },
+    { title: "동궁과 월지 돌담길", goal: "3km", desc: "고즈넉한 경주 야경과 돌담을 구경하는 산책로", lat: 35.834, lng: 129.227 },
+    { title: "형산강 체육공원 강변길", goal: "5km", desc: "탁 트인 강바람을 맞으며 걷기 좋은 평지 코스", lat: 35.830, lng: 129.210 }
 ];
+
+// 지도에 샘플 코스 마커 일괄 생성
+sampleCourses.forEach(course => {
+    var markerPosition = new kakao.maps.LatLng(course.lat, course.lng);
+    var marker = new kakao.maps.Marker({
+        position: markerPosition
+    });
+    marker.setMap(map);
+
+    // 마커 클릭 시 안내 메시지
+    kakao.maps.event.addListener(marker, 'click', function() {
+        alert(`[${course.title}] 코스입니다!\n설명: ${course.desc}`);
+    });
+});
 
 let myCustomCourses = [];
 let walkRecords = [];
 
-// 현재 위치 가져오기 버튼 기능
+// --- 2. 위치 검색 및 GPS 기능 ---
 function getCurrentLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -23,7 +45,6 @@ function getCurrentLocation() {
     }
 }
 
-// 주소 검색 버튼 기능
 function searchLocation() {
     const query = document.getElementById('locationInput').value;
     if(!query) {
@@ -33,18 +54,16 @@ function searchLocation() {
     alert(`"${query}" 주변 경주 지역의 위치를 탐색합니다.`);
 }
 
-// 맞춤 코스 추천 기능
+// --- 3. 맞춤 코스 추천 기능 ---
 function recommendCourses() {
     const selectedGoal = document.getElementById('goalSelect').value;
     const listDiv = document.getElementById('courseList');
     
-    // 목표에 맞는 샘플 코스 필터링
     let filtered = sampleCourses.filter(c => c.goal === selectedGoal);
     if(filtered.length === 0) {
         filtered = sampleCourses;
     }
 
-    // 내가 만든 코스도 포함
     let allCourses = [...filtered, ...myCustomCourses];
 
     let html = '';
@@ -59,7 +78,7 @@ function recommendCourses() {
     listDiv.innerHTML = html;
 }
 
-// 나만의 코스 등록
+// --- 4. 나만의 코스 등록 ---
 function saveCustomCourse() {
     const title = document.getElementById('customTitle').value;
     const desc = document.getElementById('customDesc').value;
@@ -70,14 +89,14 @@ function saveCustomCourse() {
         return;
     }
 
-    myCustomCourses.push({ title, goal, desc });
+    myCustomCourses.push({ title, goal, desc, lat: 35.8427, lng: 129.2084 }); // 임시로 경주시청 위치에 등록
     alert("나만의 코스가 성공적으로 등록되었습니다!");
     document.getElementById('customTitle').value = '';
     document.getElementById('customDesc').value = '';
     recommendCourses();
 }
 
-// 산책 기록 저장
+// --- 5. 산책 기록 저장 및 출력 ---
 function saveWalkRecord() {
     const date = document.getElementById('recordDate').value;
     const memo = document.getElementById('recordMemo').value;
@@ -93,7 +112,6 @@ function saveWalkRecord() {
     document.getElementById('recordMemo').value = '';
 }
 
-// 산책 기록 리스트 화면에 뿌려주기
 function renderRecords() {
     const recordListDiv = document.getElementById('recordList');
     if(walkRecords.length === 0) {
